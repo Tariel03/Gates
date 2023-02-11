@@ -10,11 +10,11 @@ import javax.persistence.*;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-@Table(name = "services")
-public class Services {
+@Table(name = "facility")
+public class Facility {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    int id;
+    Long id;
     @Column(name = "name")
     String name;
     @Column(name = "photo")
