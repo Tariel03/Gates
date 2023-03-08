@@ -3,6 +3,7 @@ package com.example.gates.Controllers;
 import com.example.gates.Dto.AdminDto;
 import com.example.gates.Models.Admin;
 import com.example.gates.Repositories.AdminRepository;
+import com.example.gates.Services.AdminService;
 import com.example.gates.Services.RegistrationService;
 import com.example.gates.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -26,6 +27,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @RequestMapping("/super")
 public class SuperAdminController {
+    AdminService adminService;
     AdminRepository adminRepository;
     MessageSource messageSource;
     RegistrationService registrationService;
@@ -58,18 +60,29 @@ public class SuperAdminController {
     }
     @PutMapping("/upgrade/{id}")
     public Admin upgradeToSuper(@PathVariable int id){
-        Optional<Admin> optionalAdmin = adminRepository.findById(id);
-        if(optionalAdmin.isPresent()){
-            Admin admin = optionalAdmin.get();
+            Admin admin = adminService.findById(id);
             admin.setRole("ROLE_SUPERADMIN");
             adminRepository.save(admin);
             return admin;
-        }
-        return null;
+    }
+    @PutMapping("/block/{id}")
+    public Admin blockAdmin(@PathVariable int id){
+            Admin admin = adminService.findById(id);
+            admin.setRole(null);
+            adminService.save(admin);
+            return admin;
+    }
+    @PutMapping("restore/{id}")
+    public Admin restoreAdmin(@PathVariable int id) {
+            Admin admin = adminService.findById(id);
+            admin.setRole("ROLE_ADMIN");
+            adminRepository.save(admin);
+            return admin;
     }
 
     public Admin convertToUser(AdminDto adminDto) {
         return this.modelMapper.map(adminDto,Admin.class);
     }
+
 
 }

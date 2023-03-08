@@ -18,6 +18,8 @@ public class Changes {
     int id;
     @Column(name = "date")
     LocalDate date;
+    @Column(name = "info")
+    String info;
     @JoinColumn(name = "admin_id")
     @ManyToOne
     Admin admin;

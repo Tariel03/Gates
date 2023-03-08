@@ -20,18 +20,17 @@ public class Order {
     String message;
     @Column(name = "name")
     String name;
-    @Column(name = "date")
-    LocalDate date;
+    @Column(name = "status")
+    String status;
     @Column(name = "contact")
     String contact;
     @JoinColumn(name = "tb_admin_id")
     @ManyToOne
     Admin admin;
 
-    public Order(String message, String name, LocalDate date, String contact) {
+    public Order(String message, String name, String contact) {
         this.message = message;
         this.name = name;
-        this.date = date;
         this.contact = contact;
     }
 }

@@ -32,30 +32,13 @@ public class OrderController  {
     public List<Order> findAll(){
         return orderService.findAll();
     }
-    @PostMapping("/makeOrder")
-    @Operation(summary = "Make order", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Order.class)))) })
-    public ResponseEntity<String> save(@RequestBody OrdersDto ordersDto, BindingResult result){
-        if (result.hasErrors()) {
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error : fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-            Order  order = convertToOrder(ordersDto);
-            orderService.save(order);
-        return ResponseEntity.ok("In process");
+
+    public Order getOne(@PathVariable int id){
+        return orderService.findById(id).orElse(null);
     }
 
 
-    public Order convertToOrder(OrdersDto orderDto) {
-        return this.modelMapper.map(orderDto, Order.class);
-    }
+
 
 
 }

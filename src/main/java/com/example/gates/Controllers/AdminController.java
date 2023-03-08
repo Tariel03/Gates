@@ -36,6 +36,7 @@ public class AdminController {
     DoneService doneService;
     ModelMapper modelMapper;
     NewsService newsService;
+    OrderService orderService;
     ServicesService servicesService;
     AdditionalService additionalService;
 
@@ -159,6 +160,25 @@ public class AdminController {
         servicesService.save(services);
         return ResponseEntity.ok(services);
     }
+    @PostMapping("/order/makeOrder")
+    @Operation(summary = "Make order", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Order.class)))) })
+    public ResponseEntity<String> save(@RequestBody OrdersDto ordersDto, BindingResult result){
+        if (result.hasErrors()) {
+            StringBuilder message = new StringBuilder();
+            List<FieldError> fieldErrors = result.getFieldErrors();
+            for (FieldError error : fieldErrors
+            ) {
+                message.append(error.getField()).append("-").append(error.getDefaultMessage());
+            }
+            throw new MainException(message.toString());
+        }
+        Order  order = convertToOrder(ordersDto);
+        orderService.save(order);
+        return ResponseEntity.ok("In process");
+    }
 
 
     public News convertToNews(NewsDto newsDto) {
@@ -169,5 +189,9 @@ public class AdminController {
     }
     public Done convertToDone(DoneDto doneDto){return this.modelMapper.map(doneDto, Done.class);}
     public Services convertToServices(ServicesDto servicesDto){return  this.modelMapper.map(servicesDto, Services.class);}
+    public Order convertToOrder(OrdersDto orderDto) {
+        return this.modelMapper.map(orderDto, Order.class);
+    }
+
 
 }
