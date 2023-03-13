@@ -22,8 +22,8 @@ public class News {
     String header;
     @Column(name = "date")
     LocalDate date;
-    @Column(name = "photo")
-    byte[] photo;
+    @Column(name = "link")
+    String link;
     @JoinColumn(name = "tb_admin_id")
     @ManyToOne
     Admin admin;

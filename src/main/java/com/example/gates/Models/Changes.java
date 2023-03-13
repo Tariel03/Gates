@@ -26,4 +26,11 @@ public class Changes {
     @JoinColumn(name = "order_id")
     @ManyToOne
     Order order;
+
+    public Changes(LocalDate date, String info, Admin admin, Order order) {
+        this.date = date;
+        this.info = info;
+        this.admin = admin;
+        this.order = order;
+    }
 }

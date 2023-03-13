@@ -8,8 +8,8 @@ import javax.persistence.ManyToOne;
 import java.time.LocalDate;
 
 public class NewsDto {
-
     String description;
+    String link;
     String header;
     LocalDate date;
     Admin admin;

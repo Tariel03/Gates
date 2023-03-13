@@ -8,6 +8,7 @@ import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 @AllArgsConstructor
@@ -20,24 +21,20 @@ public class ChangeService {
     public Changes findById(int id){
         return changesRepository.findById(id).orElse(null);
     }
-    public Changes setOrder(Order order, Changes changes){
-        changes.setOrder(order);
-        changes.setDate(LocalDate.now());
-        return changes;
+
+    public Changes generate(Order order , String status, Admin admin){
+        return new Changes(LocalDate.now(), status, admin,order);
+
+    }
+    public List<Changes> allChanges(){
+        return changesRepository.findAll();
     }
     public Changes setAdmin(Admin admin,Changes changes){
         changes.setAdmin(admin);
-        changesRepository.save(changes);
         return changes;
 
     }
 
-    public Changes setStatus(Changes changes,Order order){
-        changes.setInfo(order.getStatus());
-        changes.setOrder(order);
-        return changes;
-
-    }
 
 
 

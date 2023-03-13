@@ -19,7 +19,6 @@ public class OrdersDto {
     @Size(message = "Number must be between 5 and 100 characters long", min = 10, max = 100)
     String contact;
     Admin admin;
-
     public OrdersDto(String message, String name, LocalDate localDate, String contact) {
         this.message = message;
         this.name = name;

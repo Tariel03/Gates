@@ -18,8 +18,7 @@ public class Services {
     int id;
     @Column(name = "name")
     String name;
-
-    @Column(name = "photo")
-    byte[] photo;
+    @Column(name = "link")
+    String link;
 
 }

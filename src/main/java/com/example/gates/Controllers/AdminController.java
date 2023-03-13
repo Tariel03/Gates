@@ -18,11 +18,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -37,35 +39,18 @@ public class AdminController {
     ModelMapper modelMapper;
     NewsService newsService;
     OrderService orderService;
+    ChangeService changeService;
     ServicesService servicesService;
     AdditionalService additionalService;
+    RegistrationService registrationService;
 
-    @PostMapping("/login")
-    @Operation(summary = "Login", description = "This request is used for logging in")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Admin.class))))})
-    public Map<String, String> performLogin(@RequestBody AuthDto authenticationDTO) {
-        UsernamePasswordAuthenticationToken authInputToken =
-                new UsernamePasswordAuthenticationToken(authenticationDTO.getUsername(),
-                        authenticationDTO.getPassword());
-
-        try {
-            authenticationManager.authenticate(authInputToken);
-        } catch (BadCredentialsException e) {
-            return Map.of("message", "Incorrect credentials!");
-        }
-
-        String token = jwtUtil.generateToken(authenticationDTO.getUsername());
-        return Map.of("jwt-token", token);
-    }
 
     @PostMapping("/gates/save")
     @Operation(summary = "Write comment", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    public ResponseEntity<Gates> saveGates(@RequestBody Gates gates, BindingResult result) {
+    public ResponseEntity<Gates> saveGates(@RequestBody Gates gates,@RequestParam int id, BindingResult result) {
         if (result.hasErrors()) {
             StringBuilder message = new StringBuilder();
             List<FieldError> fieldErrors = result.getFieldErrors();
@@ -75,6 +60,7 @@ public class AdminController {
             }
             throw new MainException(message.toString());
         }
+        gates.setGates_type(gatesService.findTypeById(id));
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
@@ -86,7 +72,7 @@ public class AdminController {
     }
 
     @PostMapping("/done/save")
-    public ResponseEntity<HttpStatus> saveDone(@RequestBody DoneDto doneDto, BindingResult result){
+    public ResponseEntity<HttpStatus> saveDone(@RequestParam int id , BindingResult result){
         if (result.hasErrors()) {
             StringBuilder message = new StringBuilder();
             List<FieldError> fieldErrors = result.getFieldErrors();
@@ -96,7 +82,8 @@ public class AdminController {
             }
             throw new MainException(message.toString());
         }
-        Done done = convertToDone(doneDto);
+        Done done = new Done();
+        done.setOrder(orderService.findById(id).orElse(null));
         doneService.save(done);
 
         return ResponseEntity.ok(HttpStatus.OK);
@@ -110,7 +97,7 @@ public class AdminController {
     @Operation(summary = "Write news", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Order.class)))) })
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class)))) })
     public ResponseEntity<String> saveNews(@RequestBody NewsDto newsDto, BindingResult result){
         if (result.hasErrors()) {
             StringBuilder message = new StringBuilder();
@@ -122,6 +109,7 @@ public class AdminController {
             throw new MainException(message.toString());
         }
         News news = convertToNews(newsDto);
+        news.setAdmin(registrationService.currentUser());
         newsService.save(news);
         return ResponseEntity.ok("In process");
     }
@@ -131,7 +119,7 @@ public class AdminController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
     @PostMapping("/review/save")
-    public ResponseEntity<Review> saveReview(@Valid @RequestBody ReviewDto reviewDto, BindingResult result){
+    public ResponseEntity<Review> saveReview(@Valid @RequestBody ReviewDto reviewDto,@RequestParam int id, BindingResult result){
         if(result.hasErrors()){
             StringBuilder message = new StringBuilder();
             List<FieldError> fieldErrors = result.getFieldErrors();
@@ -142,6 +130,7 @@ public class AdminController {
             throw new MainException(message.toString());
         }
         Review review   = convertToReview(reviewDto);
+        review.setGatesType(gatesService.findTypeById(id));
         additionalService.saveReview(review);
         return ResponseEntity.ok(review);
     }
@@ -176,8 +165,29 @@ public class AdminController {
             throw new MainException(message.toString());
         }
         Order  order = convertToOrder(ordersDto);
+        orderService.receivedStatus(order);
+        Changes changes = changeService.generate(order,order.getStatus(), registrationService.currentUser());
+        changeService.save(changes);
         orderService.save(order);
         return ResponseEntity.ok("In process");
+    }
+    @GetMapping("/changes")
+    public List<Changes> allChanges(){
+        return changeService.allChanges();
+    }
+    @GetMapping("/changes/{id}")
+    public ResponseEntity<Changes> findById(@PathVariable int id ){
+        return ResponseEntity.ok(changeService.findById(id));
+    }
+    @PutMapping("/order/update/{id}")
+    public ResponseEntity<String> update(@PathVariable int id){
+        Order order = orderService.findById(id).get();
+        order.setAdmin(registrationService.currentUser());
+        orderService.updatedStatus(order, "updated");
+        orderService.save(order);
+        Changes changes = changeService.generate(order, order.getStatus(), registrationService.currentUser());
+        changeService.save(changes);
+        return ResponseEntity.ok("Order status has been changed");
     }
 
 
@@ -187,7 +197,6 @@ public class AdminController {
     public Review convertToReview(ReviewDto reviewDto){
         return this.modelMapper.map(reviewDto, Review.class);
     }
-    public Done convertToDone(DoneDto doneDto){return this.modelMapper.map(doneDto, Done.class);}
     public Services convertToServices(ServicesDto servicesDto){return  this.modelMapper.map(servicesDto, Services.class);}
     public Order convertToOrder(OrdersDto orderDto) {
         return this.modelMapper.map(orderDto, Order.class);

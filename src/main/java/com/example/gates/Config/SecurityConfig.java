@@ -35,18 +35,18 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         // конфигурируем сам Spring Security
         // конфигурируем авторизацию
-        http.csrf().disable()
+        http.   
+                cors().disable()
+                .csrf().disable()
                 .authorizeRequests()
                 .antMatchers("/super/**").hasRole("SUPERADMIN")
                 .antMatchers("/admin/**").hasAnyRole("ADMIN","SUPERADMIN")
-                .antMatchers( "/admin/login","/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html","/gates/**", "/services/**").permitAll()
+                .antMatchers( "/auth/registration","/auth/login","/v3/api-docs/**","/swagger-ui/**","/swagger-ui.html","/gates/**", "/services/**").permitAll()
                 .anyRequest().authenticated()
-
                 .and()
-                .formLogin().loginPage("/admin/login")
-                .loginProcessingUrl("/admin/process_login")
-                .failureUrl("/admin/login?error")
-                .and()
+//                .formLogin().loginPage("/auth/login")
+//                .loginProcessingUrl("/auth/process_login")
+//                .failureUrl("/auth/login?error")
                 .logout()
                 .logoutUrl("/logout")
                 .logoutSuccessUrl("/login")

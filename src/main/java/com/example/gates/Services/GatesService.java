@@ -26,6 +26,8 @@ public class GatesService{
         return gatesRepository.findById(id);
     }
 
+    public Gates_type findTypeById(int id){return gatesTypeRepository.findById(id).orElse(null);}
+
     public void delete(int id){gatesRepository.deleteById(id);}
     public List<Gates_type> findAllGateTypes(){
         return gatesTypeRepository.findAll();

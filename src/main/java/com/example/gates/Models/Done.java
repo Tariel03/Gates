@@ -16,8 +16,8 @@ public class Done {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     int id;
-    @Column(name = "photo")
-    byte[] photo;
+    @Column(name = "link")
+    String link;
     @JoinColumn(name = "tb_order_id")
     @ManyToOne
     Order order;

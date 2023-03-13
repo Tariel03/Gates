@@ -17,7 +17,7 @@ public class Gates_type {
     int id;
     @Column(name = "type")
     String type;
-    @Column(name = "photo")
-    byte[] photo;
+    @Column(name = "link")
+    String link;
 
 }

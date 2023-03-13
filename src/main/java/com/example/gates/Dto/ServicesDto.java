@@ -7,6 +7,7 @@ import javax.persistence.Column;
 public class ServicesDto {
     @Column(name = "name")
     String name;
-    @Column(name = "photo")
-    byte[] photo;
+    @Column(name = "link")
+    String link;
+
 }

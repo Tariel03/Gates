@@ -12,10 +12,6 @@ import javax.validation.constraints.Size;
 public class ReviewDto {
     @Size(min = 4, max = 100, message = "Name must be between 4 and 100 characters long")
     String name;
-    @JoinColumn
-    @ManyToOne
-    @NotNull
-    Gates_type gatesType;
     @Size(min = 10, max = 200, message = "Text must be between 10 and 100 characters long")
     String text;
 

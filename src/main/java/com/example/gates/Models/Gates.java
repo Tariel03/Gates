@@ -14,14 +14,14 @@ public class Gates {
     @Id
     @GeneratedValue( strategy = GenerationType.AUTO)
     int id;
-    @Column(name = "photo")
-    byte[] photo;
+    @Column(name = "link")
+    String link;
     @JoinColumn(name = "tb_gates_type_id" )
     @ManyToOne
    Gates_type gates_type;
 
-    public Gates(byte[] photo, Gates_type gatesType) {
-        this.photo = photo;
+    public Gates(String link, Gates_type gatesType) {
+        this.link = link;
         this.gates_type = gatesType;
     }
 }
