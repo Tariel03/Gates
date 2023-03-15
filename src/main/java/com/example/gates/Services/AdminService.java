@@ -5,10 +5,15 @@ import com.example.gates.Repositories.AdminRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @AllArgsConstructor
 public class AdminService {
     AdminRepository adminRepository;
+    public List<Admin> adminList(){
+        return adminRepository.findAll();
+    }
     public void save(Admin admin){
         adminRepository.save(admin);
     }

@@ -7,12 +7,11 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data
-public class ServicesDto {
-    @Column(name = "name")
-    @Size(min=4, max = 25, message = "Name of services must be between 4 and 25")
-    String name;
-    @NotNull
+public class Gates_typeDto {
+    @Column(name = "type")
+    @Size(min = 4, max = 20, message = "Type must be between 4 and 20 characters")
+    String type;
     @Column(name = "link")
+    @NotNull
     String link;
-
 }

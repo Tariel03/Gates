@@ -1,5 +1,6 @@
 package com.example.gates.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -26,6 +27,7 @@ public class Order {
     String contact;
     @JoinColumn(name = "tb_admin_id")
     @ManyToOne
+    @JsonIgnore
     Admin admin;
 
     public Order(String message, String name, String contact) {

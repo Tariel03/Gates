@@ -19,6 +19,10 @@ public class GatesService{
     public void save(Gates gates){
         gatesRepository.save(gates);
     }
+    public void save(Gates_type gates_type){
+        gatesTypeRepository.save(gates_type);
+    }
+
     public List<Gates> findAll(){
         return gatesRepository.findAll();
     }

@@ -64,6 +64,21 @@ public class AuthController {
         return Map.of("jwt-token", token);
     }
 
+//     public ResponseEntity<String> registration(@RequestBody @Valid AdminDto adminDto, BindingResult bindingResult){
+//        Admin admin = convertToUser(adminDto);
+//        if(bindingResult.hasErrors()){
+//            FieldError fieldError = bindingResult.getFieldError();
+//            assert fieldError != null;
+//            String message = messageSource.getMessage(fieldError, null);
+//            return ResponseEntity.ok(message);
+//        }
+//        if(adminRepository.findByUsername(admin.getUsername()).isPresent()) {
+//            return ResponseEntity.ok("User by this username exists");
+//        }
+//        return ResponseEntity.ok("Created an admin account");
+//
+//    }
+
     @PostMapping("/login")
     @Operation(summary = "Login", description = "This request is used for logging in")
     @ApiResponses(value = {

@@ -10,6 +10,7 @@ import javax.persistence.*;
 @Setter
 @ToString
 @Entity
+@Table(name = "tb_review")
 public class Review {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)

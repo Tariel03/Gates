@@ -1,5 +1,6 @@
 package com.example.gates.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;
@@ -22,6 +23,7 @@ public class Changes {
     String info;
     @JoinColumn(name = "admin_id")
     @ManyToOne
+    @JsonIgnore
     Admin admin;
     @JoinColumn(name = "order_id")
     @ManyToOne

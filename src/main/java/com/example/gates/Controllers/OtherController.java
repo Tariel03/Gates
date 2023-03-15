@@ -1,10 +1,11 @@
 package com.example.gates.Controllers;
 
-import com.example.gates.Models.Advantages;
+import com.example.gates.Models.Gates;
 import com.example.gates.Models.Review;
 import com.example.gates.Services.AdditionalService;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -12,14 +13,16 @@ import java.util.List;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("/other")
+@RequestMapping("/review")
 public class OtherController {
     AdditionalService additionalService;
-    @GetMapping("/reviews")
+    @GetMapping()
     public List<Review> reviews(){
         return additionalService.findReviews();
     }
-    @GetMapping("/advantages")
-    public List<Advantages> advantages(){return additionalService.findAdvantages();}
+    @GetMapping("/{id}")
+    public Review review(@PathVariable int id){
+        return additionalService.findReviewById(id);
+    }
 
 }

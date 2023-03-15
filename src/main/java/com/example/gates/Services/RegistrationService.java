@@ -25,7 +25,6 @@ public class RegistrationService {
     public void register(Admin admin){
         String pass = passwordEncoder.encode(admin.getPassword());
         admin.setPassword(pass);
-        admin.setRole("ROLE_ADMIN");
         adminRepository.save(admin);
     }
     public Admin currentUser (){

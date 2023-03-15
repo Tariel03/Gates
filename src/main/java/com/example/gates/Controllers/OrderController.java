@@ -27,12 +27,11 @@ import java.util.List;
 @RequestMapping("/order")
 public class OrderController  {
     OrderService orderService;
-    private final ModelMapper modelMapper;
     @GetMapping()
     public List<Order> findAll(){
         return orderService.findAll();
     }
-
+    @GetMapping("/{id}")
     public Order getOne(@PathVariable int id){
         return orderService.findById(id).orElse(null);
     }

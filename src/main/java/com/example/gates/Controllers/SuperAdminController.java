@@ -22,6 +22,7 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import java.util.List;
 import java.util.Optional;
 
 @RestController
@@ -41,25 +42,38 @@ public class SuperAdminController {
 //        return "Successfully deleted";
 //    }
     @PutMapping("/upgrade/{id}")
-    public Admin upgradeToSuper(@PathVariable int id){
+    public String upgradeToSuper(@PathVariable int id){
             Admin admin = adminService.findById(id);
-            admin.setRole("ROLE_SUPERADMIN");
-            adminRepository.save(admin);
-            return admin;
+            if(admin.getRole().equals("ROLE_ADMIN")){
+                admin.setRole("ROLE_SUPERADMIN");
+                adminRepository.save(admin);
+                return admin + " is upgraded to Super Admin";
+            }
+            return admin + " can't be upgraded";
     }
     @PutMapping("/block/{id}")
-    public Admin blockAdmin(@PathVariable int id){
+    public String blockAdmin(@PathVariable int id){
             Admin admin = adminService.findById(id);
-            admin.setRole(null);
-            adminService.save(admin);
-            return admin;
+            if(!admin.getRole().equalsIgnoreCase("ROLE_SUPERADMIN")) {
+                admin.setRole(null);
+                adminService.save(admin);
+                return admin + " Is not changeable";
+            }
+            return admin + " is changed";
     }
     @PutMapping("restore/{id}")
-    public Admin restoreAdmin(@PathVariable int id) {
+    public String restoreAdmin(@PathVariable int id) {
             Admin admin = adminService.findById(id);
+            if( admin.getRole().equals("ROLE_SUPERADMIN") || admin.getRole().equals("ROLE_ADMIN") ) {
+                return admin + " doesn't need to be restored";
+            }
             admin.setRole("ROLE_ADMIN");
             adminRepository.save(admin);
-            return admin;
+            return admin + " is restored back to admin";
+    }
+    @GetMapping("/admins")
+    public List<Admin> adminList(){
+        return adminService.adminList();
     }
 
 

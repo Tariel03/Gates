@@ -16,7 +16,7 @@ import javax.validation.constraints.Size;
 public class Admin {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    Long id;
+    int id;
     @Column(name = "name")
     String name;
     @Column(name = "username",unique = true)

@@ -1,6 +1,9 @@
 package com.example.gates.Controllers;
 
 import com.example.gates.Dto.*;
+import com.example.gates.Dto.Update.Gates_typeUpdateDto;
+import com.example.gates.Dto.Update.NewsUpdateDto;
+import com.example.gates.Dto.Update.ReviewUpdateDto;
 import com.example.gates.Exceptions.MainException;
 import com.example.gates.Models.*;
 import com.example.gates.Services.*;
@@ -43,13 +46,11 @@ public class AdminController {
     ServicesService servicesService;
     AdditionalService additionalService;
     RegistrationService registrationService;
-
-
     @PostMapping("/gates/save")
-    @Operation(summary = "Write comment", description = "This request makes a new order")
+    @Operation(summary = "Save gates", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = GatesDto.class))))})
     public ResponseEntity<Gates> saveGates(@RequestBody Gates gates,@RequestParam int id, BindingResult result) {
         if (result.hasErrors()) {
             StringBuilder message = new StringBuilder();
@@ -64,30 +65,35 @@ public class AdminController {
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
-
     @DeleteMapping("/gates/delete")
+    @Operation(summary = "Delete gates", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
     public ResponseEntity<HttpStatus> deleteGates(@RequestParam("id") int id) {
         gatesService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
+    @Operation(summary = "Done save", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Done.class))))})
     @PostMapping("/done/save")
-    public ResponseEntity<HttpStatus> saveDone(@RequestParam int id , BindingResult result){
-        if (result.hasErrors()) {
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error : fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
+    public ResponseEntity<HttpStatus> saveDone(@RequestParam int id, @RequestParam String link){
         Done done = new Done();
-        done.setOrder(orderService.findById(id).orElse(null));
+        Order order = orderService.findById(id).get();
+        order.setStatus("done");
+        done.setOrder(order);
+        done.setLink(link);
         doneService.save(done);
 
         return ResponseEntity.ok(HttpStatus.OK);
     }
+    @Operation(summary = "Delete done", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Done.class))))})
     @DeleteMapping("/done/delete")
     public ResponseEntity<HttpStatus> deleteDone(int id){
         doneService.delete(id);
@@ -97,7 +103,7 @@ public class AdminController {
     @Operation(summary = "Write news", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class)))) })
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = NewsDto.class)))) })
     public ResponseEntity<String> saveNews(@RequestBody NewsDto newsDto, BindingResult result){
         if (result.hasErrors()) {
             StringBuilder message = new StringBuilder();
@@ -113,11 +119,19 @@ public class AdminController {
         newsService.save(news);
         return ResponseEntity.ok("In process");
     }
+    @Operation(summary = "Delete comment", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
     @DeleteMapping("/news/delete")
     public ResponseEntity<HttpStatus> deleteNews(int id){
         newsService.deleteById(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
+    @Operation(summary = "Write review", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewDto.class))))})
     @PostMapping("/review/save")
     public ResponseEntity<Review> saveReview(@Valid @RequestBody ReviewDto reviewDto,@RequestParam int id, BindingResult result){
         if(result.hasErrors()){
@@ -134,6 +148,10 @@ public class AdminController {
         additionalService.saveReview(review);
         return ResponseEntity.ok(review);
     }
+    @Operation(summary = "Write comment", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = GatesDto.class))))})
     @PostMapping("services/save")
     public ResponseEntity<Services> saveServices(@Valid @RequestBody ServicesDto servicesDto, BindingResult result){
         if(result.hasErrors()){
@@ -153,7 +171,7 @@ public class AdminController {
     @Operation(summary = "Make order", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Order.class)))) })
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrdersDto.class)))) })
     public ResponseEntity<String> save(@RequestBody OrdersDto ordersDto, BindingResult result){
         if (result.hasErrors()) {
             StringBuilder message = new StringBuilder();
@@ -179,6 +197,10 @@ public class AdminController {
     public ResponseEntity<Changes> findById(@PathVariable int id ){
         return ResponseEntity.ok(changeService.findById(id));
     }
+    @Operation(summary = "Update an order", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Order.class))))})
     @PutMapping("/order/update/{id}")
     public ResponseEntity<String> update(@PathVariable int id){
         Order order = orderService.findById(id).get();
@@ -189,7 +211,73 @@ public class AdminController {
         changeService.save(changes);
         return ResponseEntity.ok("Order status has been changed");
     }
+    @PostMapping("gates/types/save")
+    public ResponseEntity<String> saveType(@Valid @RequestBody Gates_typeDto gatesTypeDto, BindingResult result){
+        if (result.hasErrors()) {
+            StringBuilder message = new StringBuilder();
+            List<FieldError> fieldErrors = result.getFieldErrors();
+            for (FieldError error : fieldErrors
+            ) {
+                message.append(error.getField()).append("-").append(error.getDefaultMessage());
+            }
+            throw new MainException(message.toString());
+        }
+        Gates_type gates_type = convertToGates_type(gatesTypeDto);
+        gatesService.save(gates_type);
+        return ResponseEntity.ok("Successfully created!");
+    }
+    @PutMapping("/gates/change")
+    public ResponseEntity<Gates>changePhoto(@RequestParam int id, @RequestParam String link){
+        Gates gates = gatesService.findById(id).orElse(null);
+        assert gates != null;
+        gates.setLink(link);
+        gatesService.save(gates);
+        return ResponseEntity.ok(gates);
+    }
+    @PutMapping("/gates_type/change")
+    public ResponseEntity<Gates_type>changeTypes(@RequestParam int id, @RequestBody Gates_typeUpdateDto gatesTypeDto){
+        Gates_type gatesType = gatesService.findTypeById(id);
+        if(gatesTypeDto.getType() != null && !gatesTypeDto.getType().isEmpty()){
+            gatesType.setType(gatesTypeDto.getType());
+        }
+        if(gatesTypeDto.getLink() != null && !gatesTypeDto.getLink().isEmpty()){
+            gatesType.setType(gatesTypeDto.getType());
+        }
+        return ResponseEntity.ok(gatesType);
+    }
+    @PutMapping("/news/change")
+    public ResponseEntity<News> changeNews(@RequestParam int id, @RequestBody NewsUpdateDto newsDto){
+        News news  = newsService.findById(id);
+        if(newsDto.getDescription() != null && !newsDto.getDescription().isEmpty()){
+            news.setDescription(newsDto.getDescription());
+        }
+        if(newsDto.getHeader() != null && !newsDto.getHeader().isEmpty()){
+            news.setHeader(newsDto.getHeader());
+        }
+        if(newsDto.getLink() != null && !newsDto.getLink().isEmpty()){
+            news.setLink(newsDto.getLink());
+        }
+        newsService.save(news);
+        return ResponseEntity.ok(news);
+    }
+    @PutMapping("/review/change")
+    public ResponseEntity<Review>changeReview(@RequestParam int id, @RequestBody ReviewUpdateDto reviewUpdateDto){
+        Review review = additionalService.findReviewById(id);
+        if(reviewUpdateDto.getName() != null  && !reviewUpdateDto.getName().isEmpty() ){
+            review.setName(reviewUpdateDto.getName());
+        }
+        if(reviewUpdateDto.getText() != null && !reviewUpdateDto.getText().isEmpty()){
+            review.setText(reviewUpdateDto.getText());
+        }
+        additionalService.saveReview(review);
+        return ResponseEntity.ok(review);
+    }
 
+
+
+    public Gates_type convertToGates_type(Gates_typeDto gatesTypeDto) {
+        return this.modelMapper.map(gatesTypeDto, Gates_type.class);
+    }
 
     public News convertToNews(NewsDto newsDto) {
         return this.modelMapper.map(newsDto, News.class);

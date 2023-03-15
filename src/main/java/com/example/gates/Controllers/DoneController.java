@@ -21,13 +21,12 @@ public class DoneController {
     public List<Done> findAll(){
         return doneService.findAll();
     }
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     public Done findById(@PathVariable int id){
         return doneRepository.findById(id).get();
     }
 
 
-    public Done convertToDone(DoneDto doneDto){return this.modelMapper.map(doneDto, Done.class);}
 
 
 }
