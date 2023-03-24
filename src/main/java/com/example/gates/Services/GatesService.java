@@ -1,7 +1,7 @@
 package com.example.gates.Services;
 
 import com.example.gates.Models.Gates;
-import com.example.gates.Models.Gates_type;
+import com.example.gates.Models.gatesType;
 import com.example.gates.Repositories.GatesRepository;
 import com.example.gates.Repositories.Gates_typeRepository;
 import lombok.AllArgsConstructor;
@@ -19,8 +19,8 @@ public class GatesService{
     public void save(Gates gates){
         gatesRepository.save(gates);
     }
-    public void save(Gates_type gates_type){
-        gatesTypeRepository.save(gates_type);
+    public void save(gatesType gatesType){
+        gatesTypeRepository.save(gatesType);
     }
 
     public List<Gates> findAll(){
@@ -30,10 +30,10 @@ public class GatesService{
         return gatesRepository.findById(id);
     }
 
-    public Gates_type findTypeById(int id){return gatesTypeRepository.findById(id).orElse(null);}
+    public gatesType findTypeById(int id){return gatesTypeRepository.findById(id).orElse(null);}
 
     public void delete(int id){gatesRepository.deleteById(id);}
-    public List<Gates_type> findAllGateTypes(){
+    public List<gatesType> findAllGateTypes(){
         return gatesTypeRepository.findAll();
     }
 

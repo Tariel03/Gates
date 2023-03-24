@@ -20,15 +20,18 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
     private final AdminDetailsService adminDetailsService;
     private final JWTFilter jwtFilter;
-    public SecurityConfig(boolean disableDefaults, AdminDetailsService adminDetailsService, JWTFilter jwtFilter) {
+    private final EncryptionConfig encryptionConfig;
+    public SecurityConfig(boolean disableDefaults, AdminDetailsService adminDetailsService, JWTFilter jwtFilter, EncryptionConfig encryptionConfig) {
         super(disableDefaults);
         this.adminDetailsService = adminDetailsService;
         this.jwtFilter = jwtFilter;
+        this.encryptionConfig = encryptionConfig;
     }
     @Autowired
-    public SecurityConfig(AdminDetailsService adminDetailsService, JWTFilter jwtFilter) {
+    public SecurityConfig(AdminDetailsService adminDetailsService, JWTFilter jwtFilter, EncryptionConfig encryptionConfig) {
         this.adminDetailsService = adminDetailsService;
         this.jwtFilter = jwtFilter;
+        this.encryptionConfig = encryptionConfig;
     }
 
     @Override
@@ -39,10 +42,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 cors().disable()
                 .csrf().disable()
                 .authorizeRequests()
-                .antMatchers("/super/**").hasRole("SUPERADMIN")
+                .antMatchers("/super/**", "/auth/registration").hasRole("SUPERADMIN")
                 .antMatchers("/admin/**").hasAnyRole("ADMIN","SUPERADMIN")
-                .antMatchers( "/auth/registration","/h2-console/**","/auth/login","/v3/api-docs/**",
-                        "/swagger-ui/**","/swagger-ui.html","/gates/**","/actuator/**", "/services/**", "/news/**", "/done/**","/other/**").permitAll()
+                .antMatchers( "/h2-console/**","/auth/login","/auth/registration","/v3/api-docs/**",
+                        "/swagger-ui/**","/swagger-ui.html","/gates/**", "/services/**", "/news/**", "/done/**","/review/**", "/advantages/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
 //                .formLogin().loginPage("/auth/login")
@@ -60,12 +63,12 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.userDetailsService(adminDetailsService)
-                .passwordEncoder(getPasswordEncoder());
+                .passwordEncoder(encryptionConfig.getPasswordEncoder());
     }
-    @Bean
-    public PasswordEncoder getPasswordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+//    @Bean
+//    public PasswordEncoder getPasswordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
     @Bean
     @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {

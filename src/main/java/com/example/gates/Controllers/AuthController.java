@@ -88,7 +88,6 @@ public class AuthController {
         UsernamePasswordAuthenticationToken authInputToken =
                 new UsernamePasswordAuthenticationToken(authDto.getUsername(),
                         authDto.getPassword());
-
         try {
             authenticationManager.authenticate(authInputToken);
         } catch (BadCredentialsException e) {

@@ -1,11 +1,7 @@
 package com.example.gates.Dto;
 
-import com.example.gates.Models.Gates_type;
 import lombok.Data;
 
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 
 @Data

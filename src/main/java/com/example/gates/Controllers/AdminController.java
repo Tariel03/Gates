@@ -1,11 +1,10 @@
 package com.example.gates.Controllers;
 
 import com.example.gates.Dto.*;
-import com.example.gates.Dto.Update.Gates_typeUpdateDto;
-import com.example.gates.Dto.Update.NewsUpdateDto;
-import com.example.gates.Dto.Update.ReviewUpdateDto;
+import com.example.gates.Dto.Update.*;
 import com.example.gates.Exceptions.MainException;
 import com.example.gates.Models.*;
+import com.example.gates.Photos.PhotoConfig;
 import com.example.gates.Services.*;
 import com.example.gates.util.JwtUtil;
 import io.swagger.v3.oas.annotations.Operation;
@@ -14,25 +13,21 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.web.authentication.session.ChangeSessionIdAuthenticationStrategy;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.validation.Valid;
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
 
 @RestController
-@AllArgsConstructor
 @RequestMapping("/admin")
 public class AdminController {
     JwtUtil jwtUtil;
@@ -46,31 +41,43 @@ public class AdminController {
     ServicesService servicesService;
     AdditionalService additionalService;
     RegistrationService registrationService;
+    //No need for Autowiring!
+    PhotoConfig photoConfig = new PhotoConfig();
+    @Autowired
+    public AdminController(JwtUtil jwtUtil, GatesService gatesService, AuthenticationManager authenticationManager, DoneService doneService, ModelMapper modelMapper, NewsService newsService, OrderService orderService, ChangeService changeService, ServicesService servicesService, AdditionalService additionalService, RegistrationService registrationService) {
+        this.jwtUtil = jwtUtil;
+        this.gatesService = gatesService;
+        this.authenticationManager = authenticationManager;
+        this.doneService = doneService;
+        this.modelMapper = modelMapper;
+        this.newsService = newsService;
+        this.orderService = orderService;
+        this.changeService = changeService;
+        this.servicesService = servicesService;
+        this.additionalService = additionalService;
+        this.registrationService = registrationService;
+    }
+
     @PostMapping("/gates/save")
     @Operation(summary = "Save gates", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = GatesDto.class))))})
-    public ResponseEntity<Gates> saveGates(@RequestBody Gates gates,@RequestParam int id, BindingResult result) {
-        if (result.hasErrors()) {
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error : fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-        gates.setGates_type(gatesService.findTypeById(id));
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
+    public ResponseEntity<Gates> saveGates(@RequestParam String description, @RequestParam("file") MultipartFile multipartFile,@RequestParam int type_id ) {
+        Gates gates = new Gates();
+        gates.setGatesType(gatesService.findTypeById(type_id));
+        gates.setDescription(description);
+        photoConfig.savePhoto(multipartFile);
+        gates.setLink(photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
-    @DeleteMapping("/gates/delete")
+    @DeleteMapping("/gates/delete/{id}")
     @Operation(summary = "Delete gates", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    public ResponseEntity<HttpStatus> deleteGates(@RequestParam("id") int id) {
+    public ResponseEntity<HttpStatus> deleteGates(@PathVariable("id") int id) {
         gatesService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -80,22 +87,22 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Done.class))))})
     @PostMapping("/done/save")
-    public ResponseEntity<HttpStatus> saveDone(@RequestParam int id, @RequestParam String link){
+    public ResponseEntity<Done> saveDone(@RequestParam int order_id, @RequestParam("file") MultipartFile file){
         Done done = new Done();
-        Order order = orderService.findById(id).get();
+        Order order = orderService.findById(order_id).get();
         order.setStatus("done");
         done.setOrder(order);
-        done.setLink(link);
+        photoConfig.savePhoto(file);
+        done.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
         doneService.save(done);
-
-        return ResponseEntity.ok(HttpStatus.OK);
+        return ResponseEntity.ok(done);
     }
     @Operation(summary = "Delete done", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Done.class))))})
-    @DeleteMapping("/done/delete")
-    public ResponseEntity<HttpStatus> deleteDone(int id){
+    @DeleteMapping("/done/delete/{id}")
+    public ResponseEntity<HttpStatus> deleteDone( @PathVariable  int id){
         doneService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
@@ -103,21 +110,21 @@ public class AdminController {
     @Operation(summary = "Write news", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = NewsDto.class)))) })
-    public ResponseEntity<String> saveNews(@RequestBody NewsDto newsDto, BindingResult result){
-        if (result.hasErrors()) {
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error : fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-        News news = convertToNews(newsDto);
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class)))) })
+    public ResponseEntity<News> saveNews(@RequestParam String description, @RequestParam String header, @RequestParam("file1") MultipartFile file, @RequestParam("file2") MultipartFile multipartFile){
+
+        News news = new News();
+        news.setDate(LocalDate.now());
+        news.setHeader(header);
+        news.setDescription(description);
+        photoConfig.savePhoto(file);
+        photoConfig.savePhoto(multipartFile);
+        news.setMain_photo(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        news.setSecond_photo(photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
         news.setAdmin(registrationService.currentUser());
+
         newsService.save(news);
-        return ResponseEntity.ok("In process");
+        return ResponseEntity.ok(news);
     }
     @Operation(summary = "Delete comment", description = "This request makes a new order")
     @ApiResponses(value = {
@@ -148,26 +155,20 @@ public class AdminController {
         additionalService.saveReview(review);
         return ResponseEntity.ok(review);
     }
-    @Operation(summary = "Write comment", description = "This request makes a new order")
+    @Operation(summary = "Save services", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = GatesDto.class))))})
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
     @PostMapping("services/save")
-    public ResponseEntity<Services> saveServices(@Valid @RequestBody ServicesDto servicesDto, BindingResult result){
-        if(result.hasErrors()){
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error:fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-       Services services = convertToServices(servicesDto);
+    public ResponseEntity<Services> saveServices(@RequestParam String name , @RequestParam MultipartFile file){
+        Services services = new Services();
+        photoConfig.savePhoto(file);
+        services.setName(name);
+        services.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
         servicesService.save(services);
         return ResponseEntity.ok(services);
     }
-    @PostMapping("/order/makeOrder")
+    @PostMapping("/order/save")
     @Operation(summary = "Make order", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
@@ -189,10 +190,13 @@ public class AdminController {
         orderService.save(order);
         return ResponseEntity.ok("In process");
     }
+
     @GetMapping("/changes")
     public List<Changes> allChanges(){
         return changeService.allChanges();
     }
+
+
     @GetMapping("/changes/{id}")
     public ResponseEntity<Changes> findById(@PathVariable int id ){
         return ResponseEntity.ok(changeService.findById(id));
@@ -200,8 +204,8 @@ public class AdminController {
     @Operation(summary = "Update an order", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Order.class))))})
-    @PutMapping("/order/update/{id}")
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderUpdateDto.class))))})
+    @PutMapping("/order/change/{id}")
     public ResponseEntity<String> update(@PathVariable int id){
         Order order = orderService.findById(id).get();
         order.setAdmin(registrationService.currentUser());
@@ -211,57 +215,120 @@ public class AdminController {
         changeService.save(changes);
         return ResponseEntity.ok("Order status has been changed");
     }
-    @PostMapping("gates/types/save")
-    public ResponseEntity<String> saveType(@Valid @RequestBody Gates_typeDto gatesTypeDto, BindingResult result){
-        if (result.hasErrors()) {
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error : fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-        Gates_type gates_type = convertToGates_type(gatesTypeDto);
-        gatesService.save(gates_type);
+    @Operation(summary = "Save new gates_type", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
+    @PostMapping("gates_types/save")
+    public ResponseEntity<String> saveType(@RequestParam String type, @RequestParam("file")MultipartFile file){
+
+        gatesType gatesType = new gatesType();
+        gatesType.setType(type);
+        photoConfig.savePhoto(file);
+        gatesType.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        gatesService.save(gatesType);
         return ResponseEntity.ok("Successfully created!");
     }
-    @PutMapping("/gates/change")
-    public ResponseEntity<Gates>changePhoto(@RequestParam int id, @RequestParam String link){
-        Gates gates = gatesService.findById(id).orElse(null);
-        assert gates != null;
-        gates.setLink(link);
+    @Operation(summary = "Update gates", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
+    @PutMapping("/gates/change/description/{id}")
+    public ResponseEntity<Gates>changeDesc(@PathVariable int id, @RequestParam String description){
+        Gates gates = gatesService.findById(id).get();
+        gates.setDescription(description);
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
-    @PutMapping("/gates_type/change")
-    public ResponseEntity<Gates_type>changeTypes(@RequestParam int id, @RequestBody Gates_typeUpdateDto gatesTypeDto){
-        Gates_type gatesType = gatesService.findTypeById(id);
-        if(gatesTypeDto.getType() != null && !gatesTypeDto.getType().isEmpty()){
-            gatesType.setType(gatesTypeDto.getType());
-        }
-        if(gatesTypeDto.getLink() != null && !gatesTypeDto.getLink().isEmpty()){
-            gatesType.setType(gatesTypeDto.getType());
-        }
+
+    @Operation(summary = "Update gates", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
+    @PutMapping("/gates/change/photo/{id}")
+    public ResponseEntity<Gates>changePhoto(@PathVariable int id, @RequestParam("file") MultipartFile multipartFile){
+        Gates gates = gatesService.findById(id).get();
+        photoConfig.savePhoto(multipartFile);
+        gates.setLink(photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
+        gatesService.save(gates);
+        return ResponseEntity.ok(gates);
+    }
+    @Operation(summary = "Get all changes", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
+    @PutMapping("/gates_type/change/photo/{id}")
+    public ResponseEntity<gatesType>changeType(@PathVariable int id, @RequestParam("file")MultipartFile file){
+        gatesType gatesType = gatesService.findTypeById(id);
+        photoConfig.savePhoto(file);
+        gatesType.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        gatesService.save(gatesType);
         return ResponseEntity.ok(gatesType);
     }
-    @PutMapping("/news/change")
-    public ResponseEntity<News> changeNews(@RequestParam int id, @RequestBody NewsUpdateDto newsDto){
+    @Operation(summary = "Get all changes", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
+    @PutMapping("/gates_type/change/type/{id}")
+    public ResponseEntity<gatesType>changeTypePhoto(@PathVariable int id, @RequestParam("type")String type){
+        gatesType gatesType = gatesService.findTypeById(id);
+        gatesType.setType(type);
+        return ResponseEntity.ok(gatesType);
+    }
+
+    @Operation(summary = "Update news", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
+    @PutMapping("/news/change/main/{id}")
+    public ResponseEntity<News> changeNewsMainPhoto(@PathVariable int id, @RequestParam("file") MultipartFile file){
         News news  = newsService.findById(id);
-        if(newsDto.getDescription() != null && !newsDto.getDescription().isEmpty()){
-            news.setDescription(newsDto.getDescription());
-        }
-        if(newsDto.getHeader() != null && !newsDto.getHeader().isEmpty()){
-            news.setHeader(newsDto.getHeader());
-        }
-        if(newsDto.getLink() != null && !newsDto.getLink().isEmpty()){
-            news.setLink(newsDto.getLink());
-        }
+        photoConfig.savePhoto(file);
+        news.setMain_photo(photoConfig.getPath()+"/"+file.getOriginalFilename());
         newsService.save(news);
         return ResponseEntity.ok(news);
     }
-    @PutMapping("/review/change")
-    public ResponseEntity<Review>changeReview(@RequestParam int id, @RequestBody ReviewUpdateDto reviewUpdateDto){
+    @Operation(summary = "Update news", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
+    @PutMapping("/news/change/second/{id}")
+    public ResponseEntity<News> changeNewsSecondPhoto(@PathVariable int id, @RequestParam("file") MultipartFile file){
+        News news  = newsService.findById(id);
+        photoConfig.savePhoto(file);
+        news.setSecond_photo(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        newsService.save(news);
+        return ResponseEntity.ok(news);
+    }
+    @Operation(summary = "Update news", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
+    @PutMapping("/news/change/desc/{id}")
+    public ResponseEntity<News> changeNewsDesc(@PathVariable int id, @RequestParam String description){
+        News news  = newsService.findById(id);
+        news.setDescription(description);
+        newsService.save(news);
+        return ResponseEntity.ok(news);
+    }
+    @Operation(summary = "Update news", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
+    @PutMapping("/news/change/header/{id}")
+    public ResponseEntity<News> changeNewsHeader(@PathVariable int id, @RequestParam String header){
+        News news  = newsService.findById(id);
+        news.setHeader(header);
+        newsService.save(news);
+        return ResponseEntity.ok(news);
+    }
+
+    @Operation(summary = "Update review", description = "This request makes a new order")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "successful operation",
+                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewDto.class))))})
+    @PutMapping("/review/change/{id}")
+    public ResponseEntity<Review>changeReview(@PathVariable int id, @RequestBody ReviewUpdateDto reviewUpdateDto){
         Review review = additionalService.findReviewById(id);
         if(reviewUpdateDto.getName() != null  && !reviewUpdateDto.getName().isEmpty() ){
             review.setName(reviewUpdateDto.getName());
@@ -273,11 +340,12 @@ public class AdminController {
         return ResponseEntity.ok(review);
     }
 
-
-
-    public Gates_type convertToGates_type(Gates_typeDto gatesTypeDto) {
-        return this.modelMapper.map(gatesTypeDto, Gates_type.class);
+    @PostMapping("/advantages/save")
+    public Advantages saveAdvantages(@RequestParam int gates_id , @RequestBody Advantages advantages){
+        advantages.setGatesType(gatesService.findTypeById(gates_id));
+        return additionalService.saveAdvantages(advantages);
     }
+
 
     public News convertToNews(NewsDto newsDto) {
         return this.modelMapper.map(newsDto, News.class);
@@ -285,7 +353,6 @@ public class AdminController {
     public Review convertToReview(ReviewDto reviewDto){
         return this.modelMapper.map(reviewDto, Review.class);
     }
-    public Services convertToServices(ServicesDto servicesDto){return  this.modelMapper.map(servicesDto, Services.class);}
     public Order convertToOrder(OrdersDto orderDto) {
         return this.modelMapper.map(orderDto, Order.class);
     }

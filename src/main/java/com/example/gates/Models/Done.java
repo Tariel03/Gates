@@ -1,5 +1,6 @@
 package com.example.gates.Models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 
 import javax.persistence.*;

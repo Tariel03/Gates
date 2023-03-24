@@ -3,23 +3,22 @@ package com.example.gates.Dto;
 import lombok.Data;
 
 
+import javax.persistence.Column;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDate;
 @Data
 public class NewsDto {
-    @Size(min = 5, max = 100)
+    @Column(name = "description")
     String description;
-    @NotNull
-    String link;
-    @NotNull
+    @Column(name = "header")
     String header;
     LocalDate date;
-    public NewsDto(String description, String link, String header) {
+
+
+    public NewsDto(String description, String header) {
         this.description = description;
-        this.link = link;
         this.header = header;
         this.date = LocalDate.now();
     }
-
 }

@@ -11,7 +11,7 @@ import javax.persistence.*;
 @NoArgsConstructor
 @ToString
 @Table(name = "tb_gates_type")
-public class Gates_type {
+public class gatesType {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     int id;

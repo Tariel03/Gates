@@ -14,7 +14,7 @@ import java.util.List;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/review")
-public class OtherController {
+public class ReviewController {
     AdditionalService additionalService;
     @GetMapping()
     public List<Review> reviews(){

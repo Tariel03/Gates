@@ -13,8 +13,8 @@ import java.util.Date;
 
 @Component
 public class JwtUtil {
-        @Value("${jwt_secret}")
-        private String secret;
+//        @Value("${jwt_secret}")
+        private final String secret = "tariel";
 
         public String generateToken(String username) {
             Date expirationDate = Date.from(ZonedDateTime.now().plusMinutes(120).toInstant());

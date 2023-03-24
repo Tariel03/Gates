@@ -18,6 +18,6 @@ public class Review {
     String name;
     @JoinColumn
     @ManyToOne
-    Gates_type gatesType;
+    com.example.gates.Models.gatesType gatesType;
     String text;
 }

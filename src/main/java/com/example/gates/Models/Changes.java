@@ -27,6 +27,7 @@ public class Changes {
     Admin admin;
     @JoinColumn(name = "order_id")
     @ManyToOne
+    @JsonIgnore
     Order order;
 
     public Changes(LocalDate date, String info, Admin admin, Order order) {

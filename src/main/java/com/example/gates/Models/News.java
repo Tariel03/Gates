@@ -25,22 +25,13 @@ public class News {
     String header;
     @Column(name = "date")
     LocalDate date;
-    @Column(name = "link")
-    String link;
+    @Column(name = "main_photo")
+    String main_photo;
+    @Column(name = "second_photo")
+    String second_photo;
     @JoinColumn(name = "tb_admin_id")
     @ManyToOne
     Admin admin;
 
-    public News(String description, String header, Admin admin) {
-        this.description = description;
-        this.header = header;
-        this.date = LocalDate.now();
-        this.admin = admin;
-    }
 
-    public News(String description, String header, LocalDate date) {
-        this.description = description;
-        this.header = header;
-        this.date = date;
-    }
 }
