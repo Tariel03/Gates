@@ -35,5 +35,13 @@ public class Changes {
         this.info = info;
         this.admin = admin;
         this.order = order;
+
+
+    }
+
+    public Changes(LocalDate date, String info, Order order) {
+        this.date = date;
+        this.info = info;
+        this.order = order;
     }
 }

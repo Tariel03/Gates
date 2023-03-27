@@ -18,10 +18,10 @@ public class OrdersDto {
     LocalDate localDate;
     @Size(message = "Number must be between 5 and 100 characters long", min = 5, max = 100)
     String contact;
-    public OrdersDto(String message, String name, LocalDate localDate, String contact) {
+    public OrdersDto(String message, String name, String contact) {
         this.message = message;
         this.name = name;
-        this.localDate = localDate;
+        this.localDate = LocalDate.now();
         this.contact = contact;
     }
 }

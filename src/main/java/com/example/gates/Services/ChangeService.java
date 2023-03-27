@@ -26,6 +26,10 @@ public class ChangeService {
         return new Changes(LocalDate.now(), status, admin,order);
 
     }
+    public Changes generate(Order order , String status){
+        return new Changes(LocalDate.now(), status, order);
+
+    }
     public List<Changes> allChanges(){
         return changesRepository.findAll();
     }

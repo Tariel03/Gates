@@ -14,7 +14,9 @@ import java.nio.file.Paths;
 @Data
 public class PhotoConfig {
 //    @Value(value = "${home_dir}")
+//    private String uploadDir = "/home/iskender/Tariel/selim_team3";
     private String uploadDir = "/home/team3/photos";
+    
 
     private Path path = Paths.get(uploadDir);
 
@@ -22,7 +24,7 @@ public class PhotoConfig {
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
-            } catch (IOException e) {
+            } catch (IOException ignored) {
 
             }
         }

@@ -113,6 +113,7 @@ public class AdminController {
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class)))) })
     public ResponseEntity<News> saveNews(@RequestParam String description, @RequestParam String header, @RequestParam("file1") MultipartFile file, @RequestParam("file2") MultipartFile multipartFile){
 
+//        News news = new News();
         News news = new News();
         news.setDate(LocalDate.now());
         news.setHeader(header);
@@ -136,22 +137,15 @@ public class AdminController {
         return ResponseEntity.ok(HttpStatus.OK);
     }
     @Operation(summary = "Write review", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewDto.class))))})
     @PostMapping("/review/save")
-    public ResponseEntity<Review> saveReview(@Valid @RequestBody ReviewDto reviewDto,@RequestParam int id, BindingResult result){
-        if(result.hasErrors()){
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error:fieldErrors
-                 ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-        Review review   = convertToReview(reviewDto);
-        review.setGatesType(gatesService.findTypeById(id));
+    public ResponseEntity<Review> saveReview(@RequestParam String name, @RequestParam String text ,@RequestParam("file") MultipartFile file,@RequestParam int type_id){
+
+        Review review   = new Review();
+        review.setName(name);
+        review.setText(text);
+        photoConfig.savePhoto(file);
+        review.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        review.setGatesType(gatesService.findTypeById(type_id));
         additionalService.saveReview(review);
         return ResponseEntity.ok(review);
     }
@@ -160,7 +154,7 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
     @PostMapping("services/save")
-    public ResponseEntity<Services> saveServices(@RequestParam String name , @RequestParam MultipartFile file){
+    public ResponseEntity<Services> saveServices(@RequestParam String name , @RequestParam("file") MultipartFile file){
         Services services = new Services();
         photoConfig.savePhoto(file);
         services.setName(name);
@@ -168,34 +162,11 @@ public class AdminController {
         servicesService.save(services);
         return ResponseEntity.ok(services);
     }
-    @PostMapping("/order/save")
-    @Operation(summary = "Make order", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrdersDto.class)))) })
-    public ResponseEntity<String> save(@RequestBody OrdersDto ordersDto, BindingResult result){
-        if (result.hasErrors()) {
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error : fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-        Order  order = convertToOrder(ordersDto);
-        orderService.receivedStatus(order);
-        Changes changes = changeService.generate(order,order.getStatus(), registrationService.currentUser());
-        changeService.save(changes);
-        orderService.save(order);
-        return ResponseEntity.ok("In process");
-    }
 
     @GetMapping("/changes")
     public List<Changes> allChanges(){
         return changeService.allChanges();
     }
-
 
     @GetMapping("/changes/{id}")
     public ResponseEntity<Changes> findById(@PathVariable int id ){
@@ -253,7 +224,7 @@ public class AdminController {
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
-    @Operation(summary = "Get all changes", description = "This request makes a new order")
+    @Operation(summary = "Change photo", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
@@ -265,7 +236,7 @@ public class AdminController {
         gatesService.save(gatesType);
         return ResponseEntity.ok(gatesType);
     }
-    @Operation(summary = "Get all changes", description = "This request makes a new order")
+    @Operation(summary = "Change type ", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
@@ -345,6 +316,15 @@ public class AdminController {
         advantages.setGatesType(gatesService.findTypeById(gates_id));
         return additionalService.saveAdvantages(advantages);
     }
+    @GetMapping("/orders")
+    public List<Order> findAll(){
+        return orderService.findAll();
+    }
+    @GetMapping("/orders/{id}")
+    public Order getOne(@PathVariable int id){
+        return orderService.findById(id).orElse(null);
+    }
+
 
 
     public News convertToNews(NewsDto newsDto) {

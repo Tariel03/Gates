@@ -16,8 +16,9 @@ public class Review {
     @GeneratedValue(strategy = GenerationType.AUTO)
     int id;
     String name;
+    String link;
     @JoinColumn
     @ManyToOne
-    com.example.gates.Models.gatesType gatesType;
+    gatesType gatesType;
     String text;
 }
