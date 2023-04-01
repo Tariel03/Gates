@@ -22,9 +22,9 @@ public class Advantages {
     @ElementCollection
     @CollectionTable(name = "mapOfAdvantages")
     Map<String, String> advantages;
-    @JoinColumn(name = "tb_gates_type_id" )
+    @JoinColumn(name = "tb_gates_id" )
     @ManyToOne
-    gatesType gatesType;
+    Gates gates;
 
     public Advantages(Map<String, String> advantages) {
         this.advantages = advantages;

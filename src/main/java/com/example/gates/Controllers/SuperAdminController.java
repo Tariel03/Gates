@@ -42,6 +42,8 @@ public class SuperAdminController {
 //        return "Successfully deleted";
 //    }
     @PutMapping("/upgrade/{id}")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+
     public String upgradeToSuper(@PathVariable int id){
             Admin admin = adminService.findById(id);
             if(admin.getRole().equals("ROLE_ADMIN")){
@@ -52,6 +54,8 @@ public class SuperAdminController {
             return admin + " can't be upgraded";
     }
     @PutMapping("/block/{id}")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+
     public String blockAdmin(@PathVariable int id){
             Admin admin = adminService.findById(id);
             if(!admin.getRole().equalsIgnoreCase("ROLE_SUPERADMIN")) {
@@ -62,6 +66,8 @@ public class SuperAdminController {
             return admin + " is changed";
     }
     @PutMapping("restore/{id}")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+
     public String restoreAdmin(@PathVariable int id) {
             Admin admin = adminService.findById(id);
             if( admin.getRole().equals("ROLE_SUPERADMIN") || admin.getRole().equals("ROLE_ADMIN") ) {
@@ -72,6 +78,7 @@ public class SuperAdminController {
             return admin + " is restored back to admin";
     }
     @GetMapping("/admins")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     public List<Admin> adminList(){
         return adminService.adminList();
     }

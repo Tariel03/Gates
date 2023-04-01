@@ -19,6 +19,6 @@ public class Review {
     String link;
     @JoinColumn
     @ManyToOne
-    gatesType gatesType;
+    Gates gates;
     String text;
 }

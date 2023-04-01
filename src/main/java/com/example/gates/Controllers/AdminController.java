@@ -38,13 +38,12 @@ public class AdminController {
     NewsService newsService;
     OrderService orderService;
     ChangeService changeService;
-    ServicesService servicesService;
     AdditionalService additionalService;
     RegistrationService registrationService;
     //No need for Autowiring!
     PhotoConfig photoConfig = new PhotoConfig();
     @Autowired
-    public AdminController(JwtUtil jwtUtil, GatesService gatesService, AuthenticationManager authenticationManager, DoneService doneService, ModelMapper modelMapper, NewsService newsService, OrderService orderService, ChangeService changeService, ServicesService servicesService, AdditionalService additionalService, RegistrationService registrationService) {
+    public AdminController(JwtUtil jwtUtil, GatesService gatesService, AuthenticationManager authenticationManager, DoneService doneService, ModelMapper modelMapper, NewsService newsService, OrderService orderService, ChangeService changeService,  AdditionalService additionalService, RegistrationService registrationService) {
         this.jwtUtil = jwtUtil;
         this.gatesService = gatesService;
         this.authenticationManager = authenticationManager;
@@ -53,36 +52,41 @@ public class AdminController {
         this.newsService = newsService;
         this.orderService = orderService;
         this.changeService = changeService;
-        this.servicesService = servicesService;
         this.additionalService = additionalService;
         this.registrationService = registrationService;
     }
 
     @PostMapping("/gates/save")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @Operation(summary = "Save gates", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    public ResponseEntity<Gates> saveGates(@RequestParam String description, @RequestParam("file") MultipartFile multipartFile,@RequestParam int type_id ) {
+    public ResponseEntity<Gates> saveGates(@RequestParam String description,@RequestParam String header, @RequestParam("file") MultipartFile multipartFile ) {
         Gates gates = new Gates();
-        gates.setGatesType(gatesService.findTypeById(type_id));
         gates.setDescription(description);
+        gates.setHeader(header);
         photoConfig.savePhoto(multipartFile);
-        gates.setLink(photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
+        gates.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
-    @DeleteMapping("/gates/delete/{id}")
+    @DeleteMapping("/gates/delete")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @Operation(summary = "Delete gates", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    public ResponseEntity<HttpStatus> deleteGates(@PathVariable("id") int id) {
+    public ResponseEntity<HttpStatus> deleteGates(@RequestParam int id) {
         gatesService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
     @Operation(summary = "Done save", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Done.class))))})
@@ -93,20 +97,24 @@ public class AdminController {
         order.setStatus("done");
         done.setOrder(order);
         photoConfig.savePhoto(file);
-        done.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        done.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
         doneService.save(done);
         return ResponseEntity.ok(done);
     }
     @Operation(summary = "Delete done", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Done.class))))})
-    @DeleteMapping("/done/delete/{id}")
-    public ResponseEntity<HttpStatus> deleteDone( @PathVariable  int id){
+    @DeleteMapping("/done/delete")
+    public ResponseEntity<HttpStatus> deleteDone( @RequestParam int id){
         doneService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
     @PostMapping("/news/save")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @Operation(summary = "Write news", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
@@ -120,64 +128,64 @@ public class AdminController {
         news.setDescription(description);
         photoConfig.savePhoto(file);
         photoConfig.savePhoto(multipartFile);
-        news.setMain_photo(photoConfig.getPath()+"/"+file.getOriginalFilename());
-        news.setSecond_photo(photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
+        news.setMain_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
+        news.setSecond_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
         news.setAdmin(registrationService.currentUser());
 
         newsService.save(news);
         return ResponseEntity.ok(news);
     }
     @Operation(summary = "Delete comment", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
     @DeleteMapping("/news/delete")
-    public ResponseEntity<HttpStatus> deleteNews(int id){
+    public ResponseEntity<HttpStatus> deleteNews(@RequestParam  int id){
         newsService.deleteById(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
     @Operation(summary = "Write review", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @PostMapping("/review/save")
-    public ResponseEntity<Review> saveReview(@RequestParam String name, @RequestParam String text ,@RequestParam("file") MultipartFile file,@RequestParam int type_id){
+    public ResponseEntity<Review> saveReview(@RequestParam String name, @RequestParam String text ,@RequestParam("file") MultipartFile file,@RequestParam int gates_id){
 
         Review review   = new Review();
         review.setName(name);
         review.setText(text);
         photoConfig.savePhoto(file);
-        review.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
-        review.setGatesType(gatesService.findTypeById(type_id));
+        review.setGates(gatesService.findById(gates_id).get());
+        review.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
         additionalService.saveReview(review);
         return ResponseEntity.ok(review);
     }
-    @Operation(summary = "Save services", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    @PostMapping("services/save")
-    public ResponseEntity<Services> saveServices(@RequestParam String name , @RequestParam("file") MultipartFile file){
-        Services services = new Services();
-        photoConfig.savePhoto(file);
-        services.setName(name);
-        services.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
-        servicesService.save(services);
-        return ResponseEntity.ok(services);
-    }
+
 
     @GetMapping("/changes")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+
     public List<Changes> allChanges(){
         return changeService.allChanges();
     }
 
+
     @GetMapping("/changes/{id}")
+//    @CrossOrigin(origins = {"http://localhost:3000", "*"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     public ResponseEntity<Changes> findById(@PathVariable int id ){
         return ResponseEntity.ok(changeService.findById(id));
     }
     @Operation(summary = "Update an order", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrderUpdateDto.class))))})
-    @PutMapping("/order/change/{id}")
-    public ResponseEntity<String> update(@PathVariable int id){
+    @PutMapping("/order/change")
+    public ResponseEntity<String> update(@RequestParam int id){
         Order order = orderService.findById(id).get();
         order.setAdmin(registrationService.currentUser());
         orderService.updatedStatus(order, "updated");
@@ -186,26 +194,30 @@ public class AdminController {
         changeService.save(changes);
         return ResponseEntity.ok("Order status has been changed");
     }
-    @Operation(summary = "Save new gates_type", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    @PostMapping("gates_types/save")
-    public ResponseEntity<String> saveType(@RequestParam String type, @RequestParam("file")MultipartFile file){
-
-        gatesType gatesType = new gatesType();
-        gatesType.setType(type);
-        photoConfig.savePhoto(file);
-        gatesType.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
-        gatesService.save(gatesType);
-        return ResponseEntity.ok("Successfully created!");
-    }
+//    @Operation(summary = "Save new gates_type", description = "This request makes a new order")
+////    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "successful operation",
+//                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
+//    @PostMapping("gates_types/save")
+//    public ResponseEntity<String> saveType(@RequestParam String type, @RequestParam("file")MultipartFile file){
+//
+//        gatesType gatesType = new gatesType();
+//        gatesType.setType(type);
+//        photoConfig.savePhoto(file);
+//        gatesType.setLink("http://161.35.29.179:8085/"+photoConfig.getPath()+"/"+file.getOriginalFilename());
+//        gatesService.save(gatesType);
+//        return ResponseEntity.ok("Successfully created!");
+//    }
     @Operation(summary = "Update gates", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    @PutMapping("/gates/change/description/{id}")
-    public ResponseEntity<Gates>changeDesc(@PathVariable int id, @RequestParam String description){
+    @PutMapping("/gates/change/description")
+    public ResponseEntity<Gates>changeDesc(@RequestParam int id, @RequestParam String description){
         Gates gates = gatesService.findById(id).get();
         gates.setDescription(description);
         gatesService.save(gates);
@@ -213,81 +225,92 @@ public class AdminController {
     }
 
     @Operation(summary = "Update gates", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Gates.class))))})
-    @PutMapping("/gates/change/photo/{id}")
-    public ResponseEntity<Gates>changePhoto(@PathVariable int id, @RequestParam("file") MultipartFile multipartFile){
+    @PutMapping("/gates/change/photo")
+    public ResponseEntity<Gates>changePhoto(@RequestParam int id, @RequestParam("file") MultipartFile multipartFile){
         Gates gates = gatesService.findById(id).get();
         photoConfig.savePhoto(multipartFile);
-        gates.setLink(photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
+        gates.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
-    @Operation(summary = "Change photo", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
-    @PutMapping("/gates_type/change/photo/{id}")
-    public ResponseEntity<gatesType>changeType(@PathVariable int id, @RequestParam("file")MultipartFile file){
-        gatesType gatesType = gatesService.findTypeById(id);
-        photoConfig.savePhoto(file);
-        gatesType.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
-        gatesService.save(gatesType);
-        return ResponseEntity.ok(gatesType);
-    }
-    @Operation(summary = "Change type ", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
-    @PutMapping("/gates_type/change/type/{id}")
-    public ResponseEntity<gatesType>changeTypePhoto(@PathVariable int id, @RequestParam("type")String type){
-        gatesType gatesType = gatesService.findTypeById(id);
-        gatesType.setType(type);
-        return ResponseEntity.ok(gatesType);
-    }
+//    @Operation(summary = "Change photo", description = "This request makes a new order")
+////    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "successful operation",
+//                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
+//    @PutMapping("/gates_type/change/photo/{id}")
+//    public ResponseEntity<gatesType>changeType(@PathVariable int id, @RequestParam("file")MultipartFile file){
+//        gatesType gatesType = gatesService.findTypeById(id);
+//        photoConfig.savePhoto(file);
+//        gatesType.setLink(photoConfig.getPath()+"/"+file.getOriginalFilename());
+//        gatesService.save(gatesType);
+//        return ResponseEntity.ok(gatesType);
+//    }
+//    @Operation(summary = "Change type ", description = "This request makes a new order")
+////    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+//    @ApiResponses(value = {
+//            @ApiResponse(responseCode = "200", description = "successful operation",
+//                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = gatesType.class))))})
+//    @PutMapping("/gates_type/change/type/{id}")
+//    public ResponseEntity<gatesType>changeTypePhoto(@PathVariable int id, @RequestParam("type")String type){
+//        gatesType gatesType = gatesService.findTypeById(id);
+//        gatesType.setType(type);
+//        return ResponseEntity.ok(gatesType);
+//    }
 
     @Operation(summary = "Update news", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
-    @PutMapping("/news/change/main/{id}")
-    public ResponseEntity<News> changeNewsMainPhoto(@PathVariable int id, @RequestParam("file") MultipartFile file){
+    @PutMapping("/news/change/main")
+    public ResponseEntity<News> changeNewsMainPhoto(@RequestParam int id, @RequestParam("file") MultipartFile file){
         News news  = newsService.findById(id);
         photoConfig.savePhoto(file);
-        news.setMain_photo(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        news.setMain_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
         newsService.save(news);
         return ResponseEntity.ok(news);
     }
     @Operation(summary = "Update news", description = "This request makes a new order")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
-    @PutMapping("/news/change/second/{id}")
-    public ResponseEntity<News> changeNewsSecondPhoto(@PathVariable int id, @RequestParam("file") MultipartFile file){
+    @PutMapping("/news/change/second")
+    public ResponseEntity<News> changeNewsSecondPhoto(@RequestParam int id, @RequestParam("file") MultipartFile file){
         News news  = newsService.findById(id);
         photoConfig.savePhoto(file);
-        news.setSecond_photo(photoConfig.getPath()+"/"+file.getOriginalFilename());
+        news.setSecond_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
         newsService.save(news);
         return ResponseEntity.ok(news);
     }
     @Operation(summary = "Update news", description = "This request makes a new order")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
-    @PutMapping("/news/change/desc/{id}")
-    public ResponseEntity<News> changeNewsDesc(@PathVariable int id, @RequestParam String description){
+    @PutMapping("/news/change/desc")
+    public ResponseEntity<News> changeNewsDesc(@RequestParam int id, @RequestParam String description){
         News news  = newsService.findById(id);
         news.setDescription(description);
         newsService.save(news);
         return ResponseEntity.ok(news);
     }
     @Operation(summary = "Update news", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = News.class))))})
-    @PutMapping("/news/change/header/{id}")
-    public ResponseEntity<News> changeNewsHeader(@PathVariable int id, @RequestParam String header){
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+    @PutMapping("/news/change/header")
+    public ResponseEntity<News> changeNewsHeader(@RequestParam int id, @RequestParam String header){
         News news  = newsService.findById(id);
         news.setHeader(header);
         newsService.save(news);
@@ -295,9 +318,8 @@ public class AdminController {
     }
 
     @Operation(summary = "Update review", description = "This request makes a new order")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "successful operation",
-                    content = @Content(array = @ArraySchema(schema = @Schema(implementation = ReviewDto.class))))})
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @PutMapping("/review/change/{id}")
     public ResponseEntity<Review>changeReview(@PathVariable int id, @RequestBody ReviewUpdateDto reviewUpdateDto){
         Review review = additionalService.findReviewById(id);
@@ -312,15 +334,21 @@ public class AdminController {
     }
 
     @PostMapping("/advantages/save")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     public Advantages saveAdvantages(@RequestParam int gates_id , @RequestBody Advantages advantages){
-        advantages.setGatesType(gatesService.findTypeById(gates_id));
+        advantages.setGates(gatesService.findById(gates_id).get());
         return additionalService.saveAdvantages(advantages);
     }
     @GetMapping("/orders")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
     public List<Order> findAll(){
         return orderService.findAll();
     }
     @GetMapping("/orders/{id}")
+//    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     public Order getOne(@PathVariable int id){
         return orderService.findById(id).orElse(null);
     }

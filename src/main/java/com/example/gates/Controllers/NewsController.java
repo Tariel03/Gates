@@ -28,11 +28,14 @@ import java.util.List;
 public class NewsController {
     NewsService newsService;
     ModelMapper modelMapper;
-    @GetMapping()
+    @GetMapping() @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+
     public List<News> newsByDate(){
         return  newsService.newsOrder();
     }
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+
     public News findById(@PathVariable int id){
        return newsService.findById(id);
     }

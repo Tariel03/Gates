@@ -18,10 +18,12 @@ public class DoneController {
     private final DoneRepository doneRepository;
 
     @GetMapping()
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     public List<Done> findAll(){
         return doneService.findAll();
     }
     @GetMapping("/{id}")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     public Done findById(@PathVariable int id){
         return doneRepository.findById(id).get();
     }

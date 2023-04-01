@@ -34,6 +34,7 @@ public class OrderController  {
     ChangeService changeService;
     RegistrationService registrationService;
     OrderService orderService;
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
 
     @PostMapping("/save")
     @Operation(summary = "Make order", description = "This request makes a new order")

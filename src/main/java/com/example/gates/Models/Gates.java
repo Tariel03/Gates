@@ -16,14 +16,13 @@ public class Gates {
     int id;
     @Column(name = "link")
     String link;
-    @Column(name = "description")
+    @Column(name = "description",columnDefinition = "TEXT")
     String description;
-    @JoinColumn(name = "tb_gates_type_id" )
-    @ManyToOne
-    gatesType gatesType;
+    @Column(name =  "header")
+    String header;
 
-    public Gates(String link, gatesType gatesType) {
+
+    public Gates(String link) {
         this.link = link;
-        this.gatesType = gatesType;
     }
 }

@@ -1,6 +1,7 @@
 package com.example.gates.Services;
 
 import com.example.gates.Models.Advantages;
+import com.example.gates.Models.Gates;
 import com.example.gates.Models.gatesType;
 import com.example.gates.Models.Review;
 import com.example.gates.Repositories.AdvantageRepository;
@@ -29,8 +30,8 @@ public class AdditionalService {
     public Advantages saveAdvantages(Advantages advantages){
         return advantageRepository.save(advantages);
     }
-    public Advantages advantages(gatesType gatesType){
-        return advantageRepository.findAdvantagesByGatesType(gatesType);
+    public Advantages advantages(Gates gates){
+        return advantageRepository.findAdvantagesByGates(gates);
     }
 
 }
