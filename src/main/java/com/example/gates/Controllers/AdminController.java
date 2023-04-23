@@ -68,7 +68,7 @@ public class AdminController {
         gates.setDescription(description);
         gates.setHeader(header);
         photoConfig.savePhoto(multipartFile);
-        gates.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
+        gates.setLink(multipartFile.getOriginalFilename());
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
@@ -83,6 +83,14 @@ public class AdminController {
         gatesService.delete(id);
         return ResponseEntity.ok(HttpStatus.OK);
     }
+    @PostMapping("/gates/kill")
+    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
+    @Operation(summary = "Delete gates", description = "This request makes a new order")
+    public ResponseEntity<HttpStatus> killGates(@RequestParam int id){
+        gatesService.setDead(id);
+        return ResponseEntity.ok(HttpStatus.OK);
+
+    }
 
     @Operation(summary = "Done save", description = "This request makes a new order")
 //    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
@@ -91,13 +99,10 @@ public class AdminController {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = Done.class))))})
     @PostMapping("/done/save")
-    public ResponseEntity<Done> saveDone(@RequestParam int order_id, @RequestParam("file") MultipartFile file){
+    public ResponseEntity<Done> saveDone( @RequestParam("file") MultipartFile file){
         Done done = new Done();
-        Order order = orderService.findById(order_id).get();
-        order.setStatus("done");
-        done.setOrder(order);
         photoConfig.savePhoto(file);
-        done.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
+        done.setLink(file.getOriginalFilename());
         doneService.save(done);
         return ResponseEntity.ok(done);
     }
@@ -128,8 +133,8 @@ public class AdminController {
         news.setDescription(description);
         photoConfig.savePhoto(file);
         photoConfig.savePhoto(multipartFile);
-        news.setMain_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
-        news.setSecond_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
+        news.setMain_photo(file.getOriginalFilename());
+        news.setSecond_photo(multipartFile.getOriginalFilename());
         news.setAdmin(registrationService.currentUser());
 
         newsService.save(news);
@@ -150,14 +155,12 @@ public class AdminController {
 //    @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001"})
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
     @PostMapping("/review/save")
-    public ResponseEntity<Review> saveReview(@RequestParam String name, @RequestParam String text ,@RequestParam("file") MultipartFile file,@RequestParam int gates_id){
-
+    public ResponseEntity<Review> saveReview(@RequestParam String name, @RequestParam String text ,@RequestParam("file") MultipartFile file){
         Review review   = new Review();
         review.setName(name);
         review.setText(text);
         photoConfig.savePhoto(file);
-        review.setGates(gatesService.findById(gates_id).get());
-        review.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
+        review.setLink(file.getOriginalFilename());
         additionalService.saveReview(review);
         return ResponseEntity.ok(review);
     }
@@ -234,7 +237,7 @@ public class AdminController {
     public ResponseEntity<Gates>changePhoto(@RequestParam int id, @RequestParam("file") MultipartFile multipartFile){
         Gates gates = gatesService.findById(id).get();
         photoConfig.savePhoto(multipartFile);
-        gates.setLink("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+multipartFile.getOriginalFilename());
+        gates.setLink(multipartFile.getOriginalFilename());
         gatesService.save(gates);
         return ResponseEntity.ok(gates);
     }
@@ -275,7 +278,7 @@ public class AdminController {
     public ResponseEntity<News> changeNewsMainPhoto(@RequestParam int id, @RequestParam("file") MultipartFile file){
         News news  = newsService.findById(id);
         photoConfig.savePhoto(file);
-        news.setMain_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
+        news.setMain_photo(file.getOriginalFilename());
         newsService.save(news);
         return ResponseEntity.ok(news);
     }
@@ -289,7 +292,7 @@ public class AdminController {
     public ResponseEntity<News> changeNewsSecondPhoto(@RequestParam int id, @RequestParam("file") MultipartFile file){
         News news  = newsService.findById(id);
         photoConfig.savePhoto(file);
-        news.setSecond_photo("http://161.35.29.179:8085"+photoConfig.getPath()+"/"+file.getOriginalFilename());
+        news.setSecond_photo(file.getOriginalFilename());
         newsService.save(news);
         return ResponseEntity.ok(news);
     }
@@ -358,6 +361,7 @@ public class AdminController {
     public News convertToNews(NewsDto newsDto) {
         return this.modelMapper.map(newsDto, News.class);
     }
+    public NewsDto convertToNewsDto(News news){return this.modelMapper.map(news, NewsDto.class);}
     public Review convertToReview(ReviewDto reviewDto){
         return this.modelMapper.map(reviewDto, Review.class);
     }

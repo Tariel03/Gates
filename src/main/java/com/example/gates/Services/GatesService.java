@@ -17,6 +17,7 @@ public class GatesService{
     Gates_typeRepository gatesTypeRepository;
 
     public void save(Gates gates){
+        gates.setStatus(true);
         gatesRepository.save(gates);
     }
     public void save(gatesType gatesType){
@@ -25,6 +26,12 @@ public class GatesService{
 
     public List<Gates> findAll(){
         return gatesRepository.findAll();
+    }
+    public List<Gates> findActive(){return gatesRepository.findGatesByStatus(true);}
+    public void setDead(int id){
+        Gates gates = gatesRepository.findById(id).get();
+        gates.setStatus(false);
+        gatesRepository.save(gates);
     }
     public Optional<Gates> findById(int id){
         return gatesRepository.findById(id);

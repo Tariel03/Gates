@@ -48,19 +48,28 @@ public class AuthController {
     public Map<String, String> performRegistration(@RequestBody @Valid AdminDto adminDto,
                                                    BindingResult bindingResult) {
         Admin admin = convertToUser(adminDto);
+        String message  = "";
+        //Проверяет подходить ли по валидации
         if (bindingResult.hasErrors()) {
             FieldError fieldError = bindingResult.getFieldError();
             assert fieldError != null;
-            String message = messageSource.getMessage(fieldError,null);
-            return Map.of("message",message );
+            message = messageSource.getMessage(fieldError,null);
+            return Map.of("message: ", message);
         }
+        //Проверяет нет такого человека уже
         if(adminRepository.findByUsername(admin.getUsername()).isPresent()) {
-            return Map.of("User by this username exists",admin.getUsername());
+            message = "User by this username exists";
+            return Map.of(admin.getUsername(), message);
+        }
+        //Проверяет подходящие ли роли!
+        if(!(adminDto.getRole().equals("ROLE_ADMIN")) && ! (adminDto.getRole().equals("ROLE_SUPERADMIN"))){
+            message = "Wrong type of role!";
+            return Map.of(adminDto.getRole(), message);
         }
         registrationService.register(admin);
-
-        String token = jwtUtil.generateToken(admin.getUsername());
-        return Map.of("jwt-token", token);
+        //Если все норм то токен выдает!
+        message = jwtUtil.generateToken(admin.getUsername());
+        return Map.of("jwt-token: ",message);
     }
 
     @PostMapping("/login")
@@ -74,14 +83,16 @@ public class AuthController {
         UsernamePasswordAuthenticationToken authInputToken =
                 new UsernamePasswordAuthenticationToken(authDto.getUsername(),
                         authDto.getPassword());
+        String message  = "";
         try {
             authenticationManager.authenticate(authInputToken);
         } catch (BadCredentialsException e) {
-            return Map.of("message", "Incorrect credentials!");
+            message = "Incorrect credentials!";
+            return Map.of("message",message);
         }
 
-        String token = jwtUtil.generateToken(authDto.getUsername());
-        return Map.of("jwt-token", token);
+        message = jwtUtil.generateToken(authDto.getUsername());
+        return Map.of("jwt-token",message);
     }
 
     public Admin convertToUser(AdminDto adminDto) {

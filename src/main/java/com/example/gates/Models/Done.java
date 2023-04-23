@@ -19,7 +19,5 @@ public class Done {
     int id;
     @Column(name = "link")
     String link;
-    @JoinColumn(name = "tb_order_id")
-    @ManyToOne
-    Order order;
+
 }

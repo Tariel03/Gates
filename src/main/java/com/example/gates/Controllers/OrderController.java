@@ -35,23 +35,16 @@ public class OrderController  {
     RegistrationService registrationService;
     OrderService orderService;
     @CrossOrigin(origins = {"http://localhost:3000", "http://localhost:3001", "*"})
-
     @PostMapping("/save")
     @Operation(summary = "Make order", description = "This request makes a new order")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "successful operation",
                     content = @Content(array = @ArraySchema(schema = @Schema(implementation = OrdersDto.class)))) })
-    public ResponseEntity<String> save(@RequestBody OrdersDto ordersDto, BindingResult result){
-        if (result.hasErrors()) {
-            StringBuilder message = new StringBuilder();
-            List<FieldError> fieldErrors = result.getFieldErrors();
-            for (FieldError error : fieldErrors
-            ) {
-                message.append(error.getField()).append("-").append(error.getDefaultMessage());
-            }
-            throw new MainException(message.toString());
-        }
-        Order  order = convertToOrder(ordersDto);
+    public ResponseEntity<String> save(@RequestParam String contact, @RequestParam String message, @RequestParam String name){
+        Order  order = new Order();
+        order.setContact(contact);
+        order.setMessage(message);
+        order.setName(name);
         orderService.receivedStatus(order);
         Changes changes = changeService.generate(order,order.getStatus());
         changeService.save(changes);

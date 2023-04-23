@@ -50,7 +50,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/super/**", "/auth/registration").hasRole("SUPERADMIN")
                 .antMatchers("/admin/**").hasAnyRole("ADMIN","SUPERADMIN")
                 .antMatchers( "/h2-console/**","/auth/login","/auth/registration","/v3/api-docs/**",
-                        "/swagger-ui/**","/swagger-ui.html", "/order/**", "/gates/**", "/services/**", "/news/**", "/done/**","/review/**", "/advantages/**").permitAll()
+                        "/swagger-ui/**","/swagger-ui.html", "/order/**", "/gates/**", "/services/**", "/news/**", "/done/**","/review/**", "/advantages/**","/image/**").permitAll()
                 .anyRequest().authenticated()
                 .and()
 //                .formLogin().loginPage("/auth/login")

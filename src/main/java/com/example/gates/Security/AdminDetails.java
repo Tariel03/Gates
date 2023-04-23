@@ -1,13 +1,13 @@
 package com.example.gates.Security;
 
 import com.example.gates.Models.Admin;
+import lombok.AllArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
 import java.util.Collections;
-
 public class AdminDetails implements UserDetails {
 
     private final Admin admin;
